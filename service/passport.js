@@ -24,12 +24,50 @@ passport.use(
       proxy: true
     },
     async (accessToken, refreshToken, profile, done) => {
-      const existingUser = await User.findOne({ googleId: profile.id });
+      const existingUser = await User.findOne({ userId: profile.id });
 
       if (existingUser) {
         return done(null, existingUser);
       }
-      const newUser = await new User({ googleId: profile.id }).save();
+      const newUser = await new User({ userId: profile.id }).save();
+      done(null, newUser);
+    }
+  )
+);
+
+passport.use(
+  new FacebookStrategy(
+    {
+      clientId: keys.facebookAppId,
+      clientSecret: keys.facebookAppSecret,
+      callbackURL: "/auth/facebook/callback"
+    },
+    async (token, tokenSecret, profile, done) => {
+      const existingUser = await User.findOne({ userId: profile.id });
+
+      if (existingUser) {
+        return done(null, existingUser);
+      }
+      const newUser = await new User({ userId: profile.id }).save();
+      done(null, newUser);
+    }
+  )
+);
+
+passport.use(
+  new TwitterStrategy(
+    {
+      consumerKey: keys.twitterConsumerKey,
+      consumerSecret: keys.twitterConsumerSecret,
+      callbackURL: "/auth/twitter/callback"
+    },
+    async (token, tokenSecret, profile, done) => {
+      const existingUser = await User.findOne({ userId: profile.id });
+
+      if (existingUser) {
+        return done(null, existingUser);
+      }
+      const newUser = await new User({ userId: profile.id }).save();
       done(null, newUser);
     }
   )
