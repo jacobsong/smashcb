@@ -2,7 +2,9 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const passport = require("passport");
+const cookieSession = require("cookie-session");
 const keys = require("./config/keys");
+const auth = require("./routes/auth");
 
 // Initialize express
 const app = express();
@@ -11,11 +13,20 @@ const app = express();
 mongoose.connect(keys.mongoURI);
 
 // Middleware
+require("./service/passport");
 app.use(bodyParser.json());
+app.use(
+  cookieSession({
+    // 30 days in milliseconds, first int = number of days
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    keys: [keys.cookieKey]
+  })
+);
 app.use(passport.initialize());
 app.use(passport.session());
 
 // Routes
+app.use("/auth", auth);
 
 // Start server
 const PORT = process.env.PORT || 5000;

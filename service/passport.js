@@ -24,12 +24,15 @@ passport.use(
       proxy: true
     },
     async (accessToken, refreshToken, profile, done) => {
-      const existingUser = await User.findOne({ userId: profile.id });
+      const existingUser = await User.findOne({ googleId: profile.id });
 
       if (existingUser) {
         return done(null, existingUser);
       }
-      const newUser = await new User({ userId: profile.id }).save();
+      const newUser = await new User({
+        googleId: profile.id,
+        profilePic: profile.photos[0]
+      }).save();
       done(null, newUser);
     }
   )
@@ -43,12 +46,12 @@ passport.use(
       callbackURL: "/auth/facebook/callback"
     },
     async (token, tokenSecret, profile, done) => {
-      const existingUser = await User.findOne({ userId: profile.id });
+      const existingUser = await User.findOne({ facebookId: profile.id });
 
       if (existingUser) {
         return done(null, existingUser);
       }
-      const newUser = await new User({ userId: profile.id }).save();
+      const newUser = await new User({ facebookId: profile.id }).save();
       done(null, newUser);
     }
   )
@@ -62,12 +65,12 @@ passport.use(
       callbackURL: "/auth/twitter/callback"
     },
     async (token, tokenSecret, profile, done) => {
-      const existingUser = await User.findOne({ userId: profile.id });
+      const existingUser = await User.findOne({ twitterId: profile.id });
 
       if (existingUser) {
         return done(null, existingUser);
       }
-      const newUser = await new User({ userId: profile.id }).save();
+      const newUser = await new User({ twitterId: profile.id }).save();
       done(null, newUser);
     }
   )
