@@ -31,7 +31,7 @@ passport.use(
       }
       const newUser = await new User({
         googleId: profile.id,
-        profilePic: profile.photos[0]
+        profilePic: profile.photos[0].value
       }).save();
       done(null, newUser);
     }
@@ -41,7 +41,7 @@ passport.use(
 passport.use(
   new FacebookStrategy(
     {
-      clientId: keys.facebookAppId,
+      clientID: keys.facebookAppId,
       clientSecret: keys.facebookAppSecret,
       callbackURL: "/auth/facebook/callback"
     },

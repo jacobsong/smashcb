@@ -10,7 +10,19 @@ const auth = require("./routes/auth");
 const app = express();
 
 // Connect MongoDB
-mongoose.connect(keys.mongoURI);
+mongoose
+  .connect(
+    keys.mongoURI,
+    { useNewUrlParser: true }
+  )
+  .then(
+    () => {
+      console.log("MongoDB connected...");
+    },
+    err => {
+      console.log("MongoDB could not connect...\n" + err);
+    }
+  );
 
 // Middleware
 require("./service/passport");
