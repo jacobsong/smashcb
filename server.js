@@ -4,7 +4,8 @@ const bodyParser = require("body-parser");
 const passport = require("passport");
 const cookieSession = require("cookie-session");
 const keys = require("./config/keys");
-const auth = require("./routes/auth");
+const authRoutes = require("./routes/auth");
+const userRoutes = require("./routes/users");
 
 // Initialize express
 const app = express();
@@ -17,7 +18,7 @@ mongoose
   )
   .then(
     () => {
-      console.log("MongoDB connected...");
+      console.log("MongoDB connected...\n");
     },
     err => {
       console.log("MongoDB could not connect...\n" + err);
@@ -25,7 +26,7 @@ mongoose
   );
 
 // Middleware
-require("./service/passport");
+require("./services/passport");
 app.use(bodyParser.json());
 app.use(
   cookieSession({
@@ -38,7 +39,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Routes
-app.use("/auth", auth);
+app.use("/api/auth", authRoutes);
+app.use("/api/user", userRoutes);
 
 // Start server
 const PORT = process.env.PORT || 5000;

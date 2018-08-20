@@ -20,7 +20,8 @@ passport.use(
     {
       clientID: keys.googleClientID,
       clientSecret: keys.googleClientSecret,
-      callbackURL: "/auth/google/callback",
+      callbackURL: "/api/auth/google/callback",
+      // set proxy to true since Heroku uses a proxy to send out requests
       proxy: true
     },
     async (accessToken, refreshToken, profile, done) => {
@@ -43,7 +44,9 @@ passport.use(
     {
       clientID: keys.facebookAppId,
       clientSecret: keys.facebookAppSecret,
-      callbackURL: "/auth/facebook/callback"
+      callbackURL: "/api/auth/facebook/callback",
+      // set proxy to true since Heroku uses a proxy to send out requests
+      proxy: true
     },
     async (token, tokenSecret, profile, done) => {
       const existingUser = await User.findOne({ facebookId: profile.id });
@@ -51,7 +54,13 @@ passport.use(
       if (existingUser) {
         return done(null, existingUser);
       }
-      const newUser = await new User({ facebookId: profile.id }).save();
+
+      const newUser = await new User({
+        facebookId: profile.id,
+        profilePic: `https://graph.facebook.com/${
+          profile.id
+        }/picture?type=small`
+      }).save();
       done(null, newUser);
     }
   )
@@ -62,7 +71,9 @@ passport.use(
     {
       consumerKey: keys.twitterConsumerKey,
       consumerSecret: keys.twitterConsumerSecret,
-      callbackURL: "/auth/twitter/callback"
+      callbackURL: "/api/auth/twitter/callback",
+      // set proxy to true since Heroku uses a proxy to send out requests
+      proxy: true
     },
     async (token, tokenSecret, profile, done) => {
       const existingUser = await User.findOne({ twitterId: profile.id });
@@ -70,7 +81,11 @@ passport.use(
       if (existingUser) {
         return done(null, existingUser);
       }
-      const newUser = await new User({ twitterId: profile.id }).save();
+
+      const newUser = await new User({
+        twitterId: profile.id,
+        profilePic: profile.photos[0].value
+      }).save();
       done(null, newUser);
     }
   )
