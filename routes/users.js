@@ -1,10 +1,10 @@
 const express = require("express");
 const _ = require("lodash");
-const validateProfile = require("../services/profileValidator");
+const { validateProfile, handleExists, isRoleValid } = require("../services/usersValidator");
 const router = express.Router();
 
 // Load middleware
-const requireLogin = require("../services/requireLogin");
+const { requireLogin, requireAdmin } = require("../services/authMiddleware");
 
 // Load models
 const User = require("../models/User");
@@ -19,19 +19,52 @@ router.post("/profile", requireLogin, async (req, res) => {
     return res.status(400).json(errors);
   }
 
-  const user = await User.findOne({ _id: req.user.id });
-  console.log(user);
+  const handleErrors = await handleExists(req.body.handle);
+
+  if (!_.isEmpty(handleErrors)) {
+    return res.status(400).json(handleErrors);
+  }
+
   const updatedUser = await User.findOneAndUpdate(
-    {
-      id: req.user.id
-    },
+    { _id: req.user.id },
     {
       $set: {
         handle: req.body.handle,
-        hasProfile: true,
-        new: true
+        hasProfile: true
       }
-    }
+    },
+    { new: true }
+  );
+
+  res.json(updatedUser);
+});
+
+// @route   POST /api/user/handle/exists
+// @desc    check if handle exists
+// @access  Public
+router.post("/handle/exists", async (req, res) => {
+  const errors = await handleExists(req.body.handle);
+
+  if (!_.isEmpty(errors)) {
+    return res.status(400).json(errors);
+  }
+  return res.json({ handle: "Available" });
+});
+
+// @route   POST /api/user/assign/role
+// @desc    assign a role to a user
+// @access  Private (Admin)
+router.post("/assign/role", requireLogin, requireAdmin, async (req, res) => {
+  const errors = await isRoleValid(req.body);
+
+  if (!_.isEmpty(errors)) {
+    return res.status(400).json(errors);
+  }
+
+  const updatedUser = await User.findOneAndUpdate(
+    { handle: req.body.handle },
+    { $set: { role: req.body.role } },
+    { new: true }
   );
 
   res.json(updatedUser);

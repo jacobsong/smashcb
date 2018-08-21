@@ -6,6 +6,7 @@ const cookieSession = require("cookie-session");
 const keys = require("./config/keys");
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/users");
+const crewRoutes = require("./routes/crews");
 
 // Initialize express
 const app = express();
@@ -41,6 +42,7 @@ app.use(passport.session());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/crew", crewRoutes);
 
 // Start server
 const PORT = process.env.PORT || 5000;
