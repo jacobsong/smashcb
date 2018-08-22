@@ -3,7 +3,7 @@ const User = require("../models/User");
 
 // @desc Checks if profile data is valid
 // @param req.body
-const validateProfile = inputData => {
+const validateProfile = async inputData => {
   let errors = {};
 
   if (inputData.handle.length > 20) {
@@ -14,6 +14,12 @@ const validateProfile = inputData => {
     errors.handle = "Handle is required";
   }
 
+  const handleErrors = await handleExists(inputData.handle);
+
+  if (!_.isEmpty(handleErrors)) {
+    errors.handleExists = true;
+  }
+
   return errors;
 };
 
@@ -22,10 +28,10 @@ const validateProfile = inputData => {
 const handleExists = async inputHandle => {
   let errors = {};
 
-  const user = await User.findOne({ handle: inputHandle });
+  const user = await User.findOne({ handle: inputHandle }).lean();
 
   if (user) {
-    errors.handle = "Handle already exists";
+    errors.handleExists = true;
   }
 
   return errors;
@@ -36,13 +42,13 @@ const handleExists = async inputHandle => {
 const isRoleValid = async inputData => {
   let errors = {};
 
-  const validRoles = [0, 1, 2];
+  const validRoles = [0, 1];
 
   if (!validRoles.includes(inputData.role)) {
     errors.role = "Role is not valid";
   }
 
-  const user = await User.findOne({ handle: inputData.handle });
+  const user = await User.findOne({ handle: inputData.handle }).lean();
 
   if (user.role === 2) {
     errors.role = "Can not change Admin";

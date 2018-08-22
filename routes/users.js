@@ -9,20 +9,26 @@ const { requireLogin, requireAdmin } = require("../services/authMiddleware");
 // Load models
 const User = require("../models/User");
 
+
+// @route   GET /api/user/profile/:handle
+// @desc    get user profile
+// @access  Public
+router.get("/profile/:handle", async (req, res) => {
+  const profile = await User.findOne({ handle: req.params.handle })
+    .populate("crew", [ "crewName" ] )
+    .lean();
+  res.json(profile);
+});
+
 // @route   POST /api/user/profile
 // @desc    create user profile
 // @access  Private
+// @body    { handle: string }
 router.post("/profile", requireLogin, async (req, res) => {
   const errors = validateProfile(req.body);
 
   if (!_.isEmpty(errors)) {
     return res.status(400).json(errors);
-  }
-
-  const handleErrors = await handleExists(req.body.handle);
-
-  if (!_.isEmpty(handleErrors)) {
-    return res.status(400).json(handleErrors);
   }
 
   const updatedUser = await User.findOneAndUpdate(
@@ -34,7 +40,7 @@ router.post("/profile", requireLogin, async (req, res) => {
       }
     },
     { new: true }
-  );
+  ).lean();
 
   res.json(updatedUser);
 });
@@ -42,18 +48,20 @@ router.post("/profile", requireLogin, async (req, res) => {
 // @route   POST /api/user/handle/exists
 // @desc    check if handle exists
 // @access  Public
+// @body    { handle: string }
 router.post("/handle/exists", async (req, res) => {
   const errors = await handleExists(req.body.handle);
 
   if (!_.isEmpty(errors)) {
     return res.status(400).json(errors);
   }
-  return res.json({ handle: "Available" });
+  return res.json({ handleExists: false });
 });
 
 // @route   POST /api/user/assign/role
 // @desc    assign a role to a user
 // @access  Private (Admin)
+// @body    { handle: string, role: int }
 router.post("/assign/role", requireLogin, requireAdmin, async (req, res) => {
   const errors = await isRoleValid(req.body);
 
@@ -65,7 +73,7 @@ router.post("/assign/role", requireLogin, requireAdmin, async (req, res) => {
     { handle: req.body.handle },
     { $set: { role: req.body.role } },
     { new: true }
-  );
+  ).lean();
 
   res.json(updatedUser);
 });
