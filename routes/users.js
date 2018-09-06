@@ -15,7 +15,7 @@ const User = require("../models/User");
 // @access  Public
 router.get("/profile/:handle", async (req, res) => {
   const profile = await User.findOne({ handle: req.params.handle })
-    .populate("crew", [ "crewName" ] )
+    .populate("crew", ["crewName"] )
     .lean();
   res.json(profile);
 });
@@ -25,7 +25,7 @@ router.get("/profile/:handle", async (req, res) => {
 // @access  Private
 // @body    { handle: string }
 router.post("/profile", requireLogin, async (req, res) => {
-  const errors = validateProfile(req.body);
+  const errors = await validateProfile(req.body);
 
   if (!_.isEmpty(errors)) {
     return res.status(400).json(errors);
