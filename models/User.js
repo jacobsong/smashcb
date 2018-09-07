@@ -8,7 +8,6 @@ const userSchema = new Schema(
     twitterId: String,
     profilePic: String,
     handle: { type: String, min: 1, max: 20 },
-    // 0=Player 1=Crew Leader 2=Admin
     role: { type: Number, default: 0 },
     date: { type: Date, default: Date.now },
     hasProfile: { type: Boolean, default: false },

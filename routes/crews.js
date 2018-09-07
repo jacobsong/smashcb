@@ -2,8 +2,11 @@ const express = require("express");
 const _ = require("lodash");
 const router = express.Router();
 
+// Load Validators
+const { validateCrewProfile, crewExists } = require("../services/crewsValidator");
+
 // Load middleware
-const { requireLogin, requireCrewLeader } = require("../services/authMiddleware");
+const { requireLogin, requireRole } = require("../services/authMiddleware");
 
 // Load models
 const User = require("../models/User");
@@ -15,16 +18,15 @@ const Crew = require("../models/Crew");
 router.get("/profile/:crew", async (req, res) => {
   const crew = await Crew.findOne({ crewName: req.params.crew })
     .populate("leader", ["handle"])
-    .lean()
-    .catch;
+    .lean();
   res.json(crew);
 });
 
 // @route   POST /api/crew/profile
 // @desc    create a crew profile
-// @access  Private (Crew Leader)
+// @access  Private (Role cd 2)
 // @body    { crewName: String }
-router.post("/profile", requireLogin, requireCrewLeader, async (req, res) => {
+router.post("/profile", requireLogin, requireRole([2]), async (req, res) => {
   const newCrew = await new Crew({
     crewName: req.body.crewName,
     leader: req.user.id
@@ -40,16 +42,16 @@ router.post("/profile", requireLogin, requireCrewLeader, async (req, res) => {
 
 // @route   POST /api/crew/invite
 // @desc    invite player to crew
-// @access  Private (Crew Leader)
+// @access  Private (Role cd 1 or 2)
 // @body    { handle: String }
-router.post("/invite", requireLogin, requireCrewLeader, async (req, res) => {
+router.post("/invite", requireLogin, requireRole([1, 2]), async (req, res) => {
   const player = await User.findOne({ handle: req.body.handle });
   
   player.invites.push(req.user.crew);
-  
+
   await player.save();
 
-  res.json();
+  res.json(player);
 
 });
 

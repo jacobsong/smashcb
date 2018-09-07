@@ -1,14 +1,15 @@
 const express = require("express");
 const _ = require("lodash");
-const { validateProfile, handleExists, isRoleValid } = require("../services/usersValidator");
 const router = express.Router();
 
+// Load validators
+const { validateProfile, handleExists, isRoleValid } = require("../services/usersValidator");
+
 // Load middleware
-const { requireLogin, requireAdmin } = require("../services/authMiddleware");
+const { requireLogin, requireRole } = require("../services/authMiddleware");
 
 // Load models
 const User = require("../models/User");
-
 
 // @route   GET /api/user/profile/:handle
 // @desc    get user profile
@@ -62,7 +63,7 @@ router.post("/handle/exists", async (req, res) => {
 // @desc    assign a role to a user
 // @access  Private (Admin)
 // @body    { handle: string, role: int }
-router.post("/assign/role", requireLogin, requireAdmin, async (req, res) => {
+router.post("/assign/role", requireLogin, requireRole([4]), async (req, res) => {
   const errors = await isRoleValid(req.body);
 
   if (!_.isEmpty(errors)) {

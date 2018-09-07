@@ -42,7 +42,7 @@ const handleExists = async inputHandle => {
 const isRoleValid = async inputData => {
   let errors = {};
 
-  const validRoles = [0, 1];
+  const validRoles = [0, 1, 2, 3];
 
   if (!validRoles.includes(inputData.role)) {
     errors.role = "Role is not valid";
@@ -50,7 +50,7 @@ const isRoleValid = async inputData => {
 
   const user = await User.findOne({ handle: inputData.handle }).lean();
 
-  if (user.role === 2) {
+  if (user.role === 4) {
     errors.role = "Can not change Admin";
   }
 
