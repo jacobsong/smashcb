@@ -6,17 +6,23 @@ const User = require("../models/User");
 const validateProfile = async inputData => {
   let errors = {};
 
-  if (inputData.handle.length > 20) {
+  if (inputData.handle === undefined) {
+    errors.error = "handle is required";
+    return errors;
+  }
+
+  const reg = /\W|_/;
+  if (reg.test(inputData.handle)) {
+    errors.handle = "Special characters and spaces not allowed";
+  }
+  
+  if (inputData.handle.length < 1 || inputData.handle.length > 20) {
     errors.handle = "Handle needs to be between 1 and 20 characers";
   }
 
-  if (_.isEmpty(inputData.handle)) {
-    errors.handle = "Handle is required";
-  }
+  const handleExistsErrors = await handleExists(inputData.handle);
 
-  const handleErrors = await handleExists(inputData.handle);
-
-  if (!_.isEmpty(handleErrors)) {
+  if (!_.isEmpty(handleExistsErrors)) {
     errors.handleExists = true;
   }
 
@@ -48,9 +54,14 @@ const isRoleValid = async inputData => {
     errors.role = "Role is not valid";
   }
 
-  const user = await User.findOne({ handle: inputData.handle }).lean();
+  const inputUser = await User.findOne({ handle: inputData.handle }).lean();
 
-  if (user.role === 4) {
+  if (inputUser === null || inputUser === undefined) {
+    errors.handle = "Handle not found";
+    return errors;
+  } 
+  
+  if (inputUser.role === 4) {
     errors.role = "Can not change Admin";
   }
 

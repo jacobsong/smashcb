@@ -18,7 +18,19 @@ router.get("/profile/:handle", async (req, res) => {
   const profile = await User.findOne({ handle: req.params.handle })
     .populate("crew", ["crewName"] )
     .lean();
-  res.json(profile);
+  return res.json(profile);
+});
+
+// @route   GET /api/user/handle/exists/:handle
+// @desc    check if handle exists
+// @access  Public
+router.get("/handle/exists/:handle", async (req, res) => {
+  const errors = await handleExists(req.params.handle);
+
+  if (!_.isEmpty(errors)) {
+    return res.status(400).json(errors);
+  }
+  return res.json({ handleExists: false });
 });
 
 // @route   POST /api/user/profile
@@ -32,36 +44,17 @@ router.post("/profile", requireLogin, async (req, res) => {
     return res.status(400).json(errors);
   }
 
-  const updatedUser = await User.findOneAndUpdate(
+  await User.updateOne(
     { _id: req.user.id },
-    {
-      $set: {
-        handle: req.body.handle,
-        hasProfile: true
-      }
-    },
-    { new: true }
-  ).lean();
+    { $set: { handle: req.body.handle, hasProfile: true } }
+  );
 
-  res.json(updatedUser);
-});
-
-// @route   POST /api/user/handle/exists
-// @desc    check if handle exists
-// @access  Public
-// @body    { handle: string }
-router.post("/handle/exists", async (req, res) => {
-  const errors = await handleExists(req.body.handle);
-
-  if (!_.isEmpty(errors)) {
-    return res.status(400).json(errors);
-  }
-  return res.json({ handleExists: false });
+  return res.json({ success: true });
 });
 
 // @route   POST /api/user/assign/role
 // @desc    assign a role to a user
-// @access  Private (Admin)
+// @access  Private (Role cd 4)
 // @body    { handle: string, role: int }
 router.post("/assign/role", requireLogin, requireRole([4]), async (req, res) => {
   const errors = await isRoleValid(req.body);
@@ -70,13 +63,12 @@ router.post("/assign/role", requireLogin, requireRole([4]), async (req, res) => 
     return res.status(400).json(errors);
   }
 
-  const updatedUser = await User.findOneAndUpdate(
+  await User.updateOne(
     { handle: req.body.handle },
-    { $set: { role: req.body.role } },
-    { new: true }
-  ).lean();
+    { $set: { role: req.body.role } }
+  );
 
-  res.json(updatedUser);
+  return res.json({ success: true });
 });
 
 module.exports = router;
