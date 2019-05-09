@@ -12,19 +12,14 @@ const crewRoutes = require("./routes/crews");
 const app = express();
 
 // Connect MongoDB
-mongoose
-  .connect(
-    keys.mongoURI,
-    { useNewUrlParser: true }
-  )
-  .then(
-    () => {
-      console.log("MongoDB connected...\n");
-    },
-    err => {
-      console.log("MongoDB could not connect...\n" + err);
-    }
-  );
+mongoose.connect(keys.mongoURI, { useNewUrlParser: true }).then(
+  () => {
+    console.log("MongoDB connected...\n");
+  },
+  err => {
+    console.log("MongoDB could not connect...\n" + err);
+  }
+);
 
 // Middleware
 require("./services/passport");
@@ -43,6 +38,16 @@ app.use(passport.session());
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/crew", crewRoutes);
+
+// Serve production assets
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static("client/build"));
+  // Express will serve up index.html file if it doesn't recognize the route
+  const path = require("path");
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
+  });
+}
 
 // Start server
 const PORT = process.env.PORT || 5000;

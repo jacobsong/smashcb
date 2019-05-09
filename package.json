@@ -7,7 +7,8 @@
     "start": "node server.js",
     "server": "nodemon server.js",
     "client": "npm start --prefix client",
-    "dev": "npm run server & npm run client"
+    "dev": "npm run server & npm run client",
+    "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm i --prefix client && npm run build --prefix client"
   },
   "repository": {
     "type": "git",
@@ -20,21 +21,21 @@
   },
   "homepage": "https://github.com/jacobsong/smashcb#readme",
   "dependencies": {
-    "body-parser": "^1.18.3",
+    "body-parser": "^1.19.0",
     "cookie-session": "^2.0.0-beta.3",
-    "express": "^4.16.3",
-    "joi": "^13.6.0",
-    "lodash": "^4.17.10",
-    "mongoose": "^5.2.6",
+    "express": "^4.16.4",
+    "joi": "^13.7.0",
+    "lodash": "^4.17.11",
+    "mongoose": "^5.5.6",
     "passport": "^0.4.0",
     "passport-facebook": "^2.1.1",
     "passport-google-oauth20": "^1.0.0",
     "passport-twitter": "^1.0.4",
-    "socket.io": "^2.1.1"
+    "socket.io": "^2.2.0"
   },
   "devDependencies": {
-    "eslint": "^5.4.0",
-    "eslint-plugin-react": "^7.11.1",
-    "nodemon": "^1.18.3"
+    "eslint": "^5.16.0",
+    "eslint-plugin-react": "^7.13.0",
+    "nodemon": "^1.19.0"
   }
 }
